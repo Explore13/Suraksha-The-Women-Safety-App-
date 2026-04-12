@@ -24,8 +24,7 @@ export default function LoginScreen() {
   const router = useRouter();
   const { setAuth, isAuthenticated, fetchTrustedContacts } = useAuthStore();
 
-  const API_BASE_URL =
-    process.env.EXPO_PUBLIC_API_URL!
+  const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL!;
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -66,7 +65,7 @@ export default function LoginScreen() {
                 text: "OK",
                 onPress: () => router.replace("/(tabs)/contact"),
               },
-            ]
+            ],
           );
         } else {
           Alert.alert("Success", "Login successful", [

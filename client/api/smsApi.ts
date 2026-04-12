@@ -16,7 +16,7 @@ const sendSMS = async (location: Location, numbersArray?: string[]) => {
     const GMapLink = `https://www.google.com/maps/search/?api=1&query=${location.lat},${location.lon}`;
 
     const response = await axios.post(
-      `${process.env.EXPO_PUBLIC_API_URL!}/send-sms`,
+      `${process.env.EXPO_PUBLIC_API_URL!}/sms/send-sms`,
       {
         location: GMapLink,
         latitude: location.lat,
@@ -28,7 +28,7 @@ const sendSMS = async (location: Location, numbersArray?: string[]) => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     console.log("✅ SOS SMS Response:", response.data);
@@ -37,7 +37,7 @@ const sendSMS = async (location: Location, numbersArray?: string[]) => {
     if (isAxiosError(error)) {
       console.error("❌ SOS SMS Error:", error.response?.data || error.message);
       throw new Error(
-        error.response?.data?.message || "Failed to send emergency alerts"
+        error.response?.data?.message || "Failed to send emergency alerts",
       );
     }
     console.error("❌ Error sending SOS:", (error as Error).message);

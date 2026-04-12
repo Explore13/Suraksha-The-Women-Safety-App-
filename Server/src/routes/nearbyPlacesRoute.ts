@@ -13,7 +13,7 @@ const router = Router();
 router.get(
   "/categories",
   authenticate,
-  NearbyPlacesController.getNearbyPlacesByCategory
+  NearbyPlacesController.getNearbyPlacesByCategory,
 );
 
 /**
@@ -24,4 +24,4 @@ router.get(
  */
 router.get("/", authenticate, NearbyPlacesController.getNearbyPlaces);
 
-export default router;
+export const nearbyPlacesRoute = router;

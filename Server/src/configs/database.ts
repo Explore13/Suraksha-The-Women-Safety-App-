@@ -1,8 +1,5 @@
 import mongoose from "mongoose";
 
-/**
- * MongoDB Connection Configuration
- */
 export const connectDatabase = async (): Promise<void> => {
   try {
     const MONGODB_URI =

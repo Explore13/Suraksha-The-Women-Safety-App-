@@ -6,6 +6,7 @@ import {
   watchUserLocation,
   startBackgroundLocationUpdates,
   setAppInForeground,
+  setForegroundApiEnabled,
 } from "../services/locationService";
 import { useLocationStore } from "../store/useLocationStore";
 import { useAuthStore } from "../store/useAuthStore";
@@ -35,6 +36,7 @@ export default function LocationProvider({ children }: LocationProviderProps) {
       }
 
       // Set app state to foreground - background task will skip API calls
+      setForegroundApiEnabled(true);
       await setAppInForeground(true);
 
       console.log("📍 [Foreground] Starting location watch...");
@@ -63,6 +65,7 @@ export default function LocationProvider({ children }: LocationProviderProps) {
       }
 
       // Set app state to background - background task will now call API
+      setForegroundApiEnabled(false);
       await setAppInForeground(false);
       console.log("✅ [Background] Background task will now handle API calls");
     };
@@ -72,7 +75,7 @@ export default function LocationProvider({ children }: LocationProviderProps) {
      */
     const handleAppStateChange = async (nextAppState: AppStateStatus) => {
       console.log(
-        `📱 App state changed: ${appState.current} -> ${nextAppState}`
+        `📱 App state changed: ${appState.current} -> ${nextAppState}`,
       );
 
       if (
@@ -137,6 +140,7 @@ export default function LocationProvider({ children }: LocationProviderProps) {
         await startForegroundTracking();
       } else {
         // App started in background
+        setForegroundApiEnabled(false);
         await setAppInForeground(false);
       }
 
@@ -150,7 +154,7 @@ export default function LocationProvider({ children }: LocationProviderProps) {
     // Subscribe to app state changes
     const subscription = AppState.addEventListener(
       "change",
-      handleAppStateChange
+      handleAppStateChange,
     );
 
     // Cleanup function
@@ -170,7 +174,7 @@ export default function LocationProvider({ children }: LocationProviderProps) {
       // Note: We do NOT stop background location updates on unmount
       // The background task should continue running for user safety
       console.log(
-        "📍 Background location tracking continues running for safety"
+        "📍 Background location tracking continues running for safety",
       );
     };
   }, [isAuthenticated, setLocation]);

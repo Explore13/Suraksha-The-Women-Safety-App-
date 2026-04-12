@@ -9,7 +9,8 @@ import { onboardingRoute } from "./src/routes/onboardingRoute";
 import { codeWordRoute } from "./src/routes/codeWordRoute";
 import { trustedContactRoute } from "./src/routes/trustedContactRoute";
 import { locationRoute } from "./src/routes/locationRoute";
-import nearbyPlacesRoute from "./src/routes/nearbyPlacesRoute";
+import { requestLogger } from "./src/middlewares/requestLogger";
+import { nearbyPlacesRoute } from "./src/routes/nearbyPlacesRoute";
 
 // Load environment variables
 dotenv.config();
@@ -22,11 +23,14 @@ app.use(
   cors({
     origin: process.env.CORS_ORIGIN || "*",
     credentials: true,
-  })
+  }),
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
+
+// Custom logging middleware
+app.use(requestLogger);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -38,7 +42,7 @@ app.get("/health", (req, res) => {
 });
 
 // API Routes
-app.use("/api", smsRoute);
+app.use("/api/sms", smsRoute);
 app.use("/api/otp", otpRoute);
 app.use("/api/users", userRoute);
 app.use("/api/onboarding", onboardingRoute);
@@ -61,7 +65,7 @@ app.use(
     err: any,
     req: express.Request,
     res: express.Response,
-    next: express.NextFunction
+    next: express.NextFunction,
   ) => {
     console.error("❌ Server Error:", err);
     res.status(500).json({
@@ -69,7 +73,7 @@ app.use(
       message: "Internal server error",
       error: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
-  }
+  },
 );
 
 // Start server function

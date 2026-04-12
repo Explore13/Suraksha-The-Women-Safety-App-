@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LOCATION_TASK_NAME = "background-location-task";
 const APP_STATE_KEY = "app_is_in_foreground";
+let foregroundApiEnabled = false;
 
 // Get API URL
 const getApiUrl = (): string => {
@@ -14,12 +15,17 @@ const getApiUrl = (): string => {
  * Set app state for background task to know if it should call API
  */
 export const setAppInForeground = async (
-  inForeground: boolean
+  inForeground: boolean,
 ): Promise<void> => {
+  foregroundApiEnabled = inForeground;
   await AsyncStorage.setItem(APP_STATE_KEY, inForeground ? "true" : "false");
   console.log(
-    `📱 App state set to: ${inForeground ? "FOREGROUND" : "BACKGROUND"}`
+    `📱 App state set to: ${inForeground ? "FOREGROUND" : "BACKGROUND"}`,
   );
+};
+
+export const setForegroundApiEnabled = (enabled: boolean): void => {
+  foregroundApiEnabled = enabled;
 };
 
 /**
@@ -41,7 +47,7 @@ export const sendLocationToServer = async (
   speed?: number | null,
   heading?: number | null,
   timestamp?: number,
-  source: "foreground" | "background" = "foreground"
+  source: "foreground" | "background" = "foreground",
 ): Promise<{ success: boolean; saved: boolean; distance?: number }> => {
   const tag = source === "foreground" ? "[Foreground]" : "[Background]";
 
@@ -83,14 +89,14 @@ export const sendLocationToServer = async (
     if (saved) {
       console.log(
         `✅ ${tag} Location saved on server (distance: ${distance?.toFixed(
-          2
-        )}m)`
+          2,
+        )}m)`,
       );
     } else if (data.success) {
       console.log(
         `📍 ${tag} Location not saved - distance too small (${distance?.toFixed(
-          2
-        )}m < 5m)`
+          2,
+        )}m < 5m)`,
       );
     }
 
@@ -134,13 +140,13 @@ export const checkIfLocationEnabled = async (): Promise<boolean> => {
 };
 
 export const watchUserLocation = async (
-  callback: (location: Location.LocationObject) => void
+  callback: (location: Location.LocationObject) => void,
 ): Promise<Location.LocationSubscription> => {
   return await Location.watchPositionAsync(
     {
       accuracy: Location.Accuracy.High,
       distanceInterval: 0,
-      timeInterval: 1000,
+      timeInterval: 5000,
     },
     async (location) => {
       console.log("📍 [Foreground] Location update:", {
@@ -152,6 +158,10 @@ export const watchUserLocation = async (
       // Call the callback for local state updates
       callback(location);
 
+      if (!foregroundApiEnabled) {
+        return;
+      }
+
       // Send to server from foreground
       await sendLocationToServer(
         location.coords.latitude,
@@ -161,9 +171,9 @@ export const watchUserLocation = async (
         location.coords.speed,
         location.coords.heading,
         location.timestamp,
-        "foreground"
+        "foreground",
       );
-    }
+    },
   );
 };
 
@@ -178,16 +188,16 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }: any) => {
     const { locations } = data as { locations: Location.LocationObject[] };
 
     // Check if app is in foreground - if so, skip API call (foreground handles it)
-    const inForeground = await isAppInForeground();
+    const inForeground = foregroundApiEnabled || (await isAppInForeground());
     if (inForeground) {
       console.log(
-        "📍 [Background] App is in foreground - skipping API call (foreground handles it)"
+        "📍 [Background] App is in foreground - skipping API call (foreground handles it)",
       );
       return;
     }
 
     console.log(
-      `📍 [Background] Processing ${locations.length} location update(s)`
+      `📍 [Background] Processing ${locations.length} location update(s)`,
     );
 
     // Process only the latest location to avoid duplicate calls
@@ -208,7 +218,7 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }: any) => {
         location.coords.speed,
         location.coords.heading,
         location.timestamp,
-        "background"
+        "background",
       );
     } catch (err) {
       console.error("❌ [Background] Failed to send location:", err);
@@ -226,7 +236,7 @@ export const startBackgroundLocationUpdates = async (): Promise<boolean> => {
       await Location.getBackgroundPermissionsAsync();
 
     console.log(
-      `📍 [Background] Permissions - Foreground: ${foregroundStatus}, Background: ${backgroundStatus}`
+      `📍 [Background] Permissions - Foreground: ${foregroundStatus}, Background: ${backgroundStatus}`,
     );
 
     if (foregroundStatus !== "granted" || backgroundStatus !== "granted") {
@@ -234,9 +244,8 @@ export const startBackgroundLocationUpdates = async (): Promise<boolean> => {
       return false;
     }
 
-    const isRegistered = await TaskManager.isTaskRegisteredAsync(
-      LOCATION_TASK_NAME
-    );
+    const isRegistered =
+      await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME);
 
     if (!isRegistered) {
       console.log("📍 [Background] Registering location task...");
@@ -272,9 +281,8 @@ export const startBackgroundLocationUpdates = async (): Promise<boolean> => {
 
 export const stopBackgroundLocationUpdates = async (): Promise<void> => {
   try {
-    const isRegistered = await TaskManager.isTaskRegisteredAsync(
-      LOCATION_TASK_NAME
-    );
+    const isRegistered =
+      await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME);
     if (isRegistered) {
       console.log("🛑 [Background] Stopping location task...");
       await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);

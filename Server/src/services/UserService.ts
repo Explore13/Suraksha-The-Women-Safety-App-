@@ -66,7 +66,7 @@ export class UserService {
       return user;
     } catch (error) {
       throw new Error(
-        `Error finding user by email: ${(error as Error).message}`
+        `Error finding user by email: ${(error as Error).message}`,
       );
     }
   }
@@ -80,7 +80,7 @@ export class UserService {
       return user;
     } catch (error) {
       throw new Error(
-        `Error finding user by mobile: ${(error as Error).message}`
+        `Error finding user by mobile: ${(error as Error).message}`,
       );
     }
   }
@@ -90,7 +90,7 @@ export class UserService {
    */
   async updateUser(
     userId: string | Types.ObjectId,
-    updateData: Partial<IUser>
+    updateData: Partial<IUser>,
   ): Promise<IUser | null> {
     try {
       // Don't allow direct password updates through this method
@@ -115,7 +115,7 @@ export class UserService {
   async updatePassword(
     userId: string | Types.ObjectId,
     oldPassword: string,
-    newPassword: string
+    newPassword: string,
   ): Promise<boolean> {
     try {
       const user = await User.findById(userId);
@@ -174,7 +174,7 @@ export class UserService {
       return user;
     } catch (error) {
       throw new Error(
-        `Error verifying credentials: ${(error as Error).message}`
+        `Error verifying credentials: ${(error as Error).message}`,
       );
     }
   }
@@ -187,7 +187,7 @@ export class UserService {
       const user = await User.findByIdAndUpdate(
         userId,
         { isEmailVerified: true },
-        { new: true }
+        { new: true },
       );
       return user;
     } catch (error) {
@@ -203,7 +203,7 @@ export class UserService {
       const user = await User.findByIdAndUpdate(
         userId,
         { isMobileVerified: true },
-        { new: true }
+        { new: true },
       );
       return user;
     } catch (error) {
@@ -216,18 +216,18 @@ export class UserService {
    */
   async updateTrustedContactsStatus(
     userId: string | Types.ObjectId,
-    status: boolean
+    status: boolean,
   ): Promise<IUser | null> {
     try {
       const user = await User.findByIdAndUpdate(
         userId,
         { setTrustedContacts: status },
-        { new: true }
+        { new: true },
       );
       return user;
     } catch (error) {
       throw new Error(
-        `Error updating trusted contacts status: ${(error as Error).message}`
+        `Error updating trusted contacts status: ${(error as Error).message}`,
       );
     }
   }
@@ -237,18 +237,18 @@ export class UserService {
    */
   async updateGuardianVerificationStatus(
     userId: string | Types.ObjectId,
-    status: boolean
+    status: boolean,
   ): Promise<IUser | null> {
     try {
       const user = await User.findByIdAndUpdate(
         userId,
         { isGuardianVerified: status },
-        { new: true }
+        { new: true },
       );
       return user;
     } catch (error) {
       throw new Error(
-        `Error updating guardian verification: ${(error as Error).message}`
+        `Error updating guardian verification: ${(error as Error).message}`,
       );
     }
   }
@@ -258,7 +258,7 @@ export class UserService {
    */
   async addRole(
     userId: string | Types.ObjectId,
-    role: "USER" | "GUARDIAN" | "VOLUNTEER"
+    role: "USER" | "GUARDIAN" | "VOLUNTEER",
   ): Promise<IUser | null> {
     try {
       const user = await User.findById(userId);
@@ -282,7 +282,7 @@ export class UserService {
    */
   async removeRole(
     userId: string | Types.ObjectId,
-    role: "USER" | "GUARDIAN" | "VOLUNTEER"
+    role: "USER" | "GUARDIAN" | "VOLUNTEER",
   ): Promise<IUser | null> {
     try {
       const user = await User.findById(userId);
@@ -307,7 +307,7 @@ export class UserService {
       const user = await User.findByIdAndUpdate(
         userId,
         { status: "SUSPENDED" },
-        { new: true }
+        { new: true },
       );
       return user;
     } catch (error) {
@@ -323,7 +323,7 @@ export class UserService {
       const user = await User.findByIdAndUpdate(
         userId,
         { status: "ACTIVE" },
-        { new: true }
+        { new: true },
       );
       return user;
     } catch (error) {
@@ -339,7 +339,7 @@ export class UserService {
       const user = await User.findByIdAndUpdate(
         userId,
         { status: "DELETED" },
-        { new: true }
+        { new: true },
       );
       return user;
     } catch (error) {
@@ -387,7 +387,7 @@ export class UserService {
    */
   async userExists(
     identifier: string,
-    type: "email" | "mobile"
+    type: "email" | "mobile",
   ): Promise<boolean> {
     try {
       const query =
@@ -396,7 +396,7 @@ export class UserService {
       return !!user;
     } catch (error) {
       throw new Error(
-        `Error checking user existence: ${(error as Error).message}`
+        `Error checking user existence: ${(error as Error).message}`,
       );
     }
   }
